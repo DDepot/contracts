@@ -453,9 +453,9 @@ contract TimeBondDepository is Ownable {
 
     /* ======== STATE VARIABLES ======== */
 
-    IERC20 public immutable Time; // token given as payment for bond
+    IERC20 public immutable Jazz; // token given as payment for bond
     IERC20 public immutable principle; // token used to create bond
-    ITreasury public immutable treasury; // mints Time when receives principle
+    ITreasury public immutable treasury; // mints Jazz when receives principle
     address public immutable DAO; // receives profit share from bond
 
     bool public immutable isLiquidityBond; // LP and Reserve bonds are treated slightly different
@@ -492,9 +492,9 @@ contract TimeBondDepository is Ownable {
 
     // Info for bond holder
     struct Bond {
-        uint payout; // Time remaining to be paid
+        uint payout; // Jazz remaining to be paid
         uint pricePaid; // In DAI, for front end viewing
-        uint32 lastTime; // Last interaction
+        uint32 lastJazz; // Last interaction
         uint32 vesting; // Seconds left to vest
     }
 
@@ -513,14 +513,14 @@ contract TimeBondDepository is Ownable {
     /* ======== INITIALIZATION ======== */
 
     constructor ( 
-        address _Time,
+        address _Jazz,
         address _principle,
         address _treasury, 
         address _DAO, 
         address _bondCalculator
     ) {
-        require( _Time != address(0) );
-        Time = IERC20(_Time);
+        require( _Jazz != address(0) );
+        Jazz = IERC20(_Jazz);
         require( _principle != address(0) );
         principle = IERC20(_principle);
         require( _treasury != address(0) );
@@ -678,27 +678,27 @@ contract TimeBondDepository is Ownable {
         uint value = treasury.valueOf( address(principle), _amount );
         uint payout = payoutFor( value ); // payout to bonder is computed
         require( totalDebt.add(value) <= terms.maxDebt, "Max capacity reached" );
-        require( payout >= 10000000, "Bond too small" ); // must be > 0.01 Time ( underflow protection )
+        require( payout >= 10000000, "Bond too small" ); // must be > 0.01 Jazz ( underflow protection )
         require( payout <= maxPayout(), "Bond too large"); // size protection because there is no slippage
 
         // profits are calculated
         uint fee = payout.mul( terms.fee )/ 10000 ;
         uint profit = value.sub( payout ).sub( fee );
 
-        uint balanceBefore = Time.balanceOf(address(this));
+        uint balanceBefore = Jazz.balanceOf(address(this));
         /**
             principle is transferred in
             approved and
-            deposited into the treasury, returning (_amount - profit) Time
+            deposited into the treasury, returning (_amount - profit) Jazz
          */
         principle.safeTransferFrom( msg.sender, address(this), _amount );
         principle.approve( address( treasury ), _amount );
         treasury.deposit( _amount, address(principle), profit );
         
         if ( fee != 0 ) { // fee is transferred to dao 
-            Time.safeTransfer( DAO, fee ); 
+            Jazz.safeTransfer( DAO, fee ); 
         }
-        require(balanceBefore.add(profit) == Time.balanceOf(address(this)), "Not enough Time to cover profit");
+        require(balanceBefore.add(profit) == Jazz.balanceOf(address(this)), "Not enough Jazz to cover profit");
         // total debt is increased
         totalDebt = totalDebt.add( value ); 
                 
@@ -764,13 +764,13 @@ contract TimeBondDepository is Ownable {
      */
     function stakeOrSend( address _recipient, bool _stake, uint _amount ) internal returns ( uint ) {
         if ( !_stake ) { // if user does not want to stake
-            Time.transfer( _recipient, _amount ); // send payout
+            Jazz.transfer( _recipient, _amount ); // send payout
         } else { // if user wants to stake
             if ( useHelper ) { // use if staking warmup is 0
-                Time.approve( address(stakingHelper), _amount );
+                Jazz.approve( address(stakingHelper), _amount );
                 stakingHelper.stake( _amount, _recipient );
             } else {
-                Time.approve( address(staking), _amount );
+                Jazz.approve( address(staking), _amount );
                 staking.stake( _amount, _recipient );
             }
         }
@@ -873,11 +873,11 @@ contract TimeBondDepository is Ownable {
 
 
     /**
-     *  @notice calculate current ratio of debt to Time supply
+     *  @notice calculate current ratio of debt to Jazz supply
      *  @return debtRatio_ uint
      */
     function debtRatio() public view returns ( uint debtRatio_ ) {   
-        uint supply = Time.totalSupply();
+        uint supply = Jazz.totalSupply();
         debtRatio_ = FixedPoint.fraction( 
             currentDebt().mul( 1e9 ), 
             supply
@@ -935,7 +935,7 @@ contract TimeBondDepository is Ownable {
     }
 
     /**
-     *  @notice calculate amount of Time available for claim by depositor
+     *  @notice calculate amount of Jazz available for claim by depositor
      *  @param _depositor address
      *  @return pendingPayout_ uint
      */
@@ -956,11 +956,11 @@ contract TimeBondDepository is Ownable {
     /* ======= AUXILLIARY ======= */
 
     /**
-     *  @notice allow anyone to send lost tokens (excluding principle or Time) to the DAO
+     *  @notice allow anyone to send lost tokens (excluding principle or Jazz) to the DAO
      *  @return bool
      */
     function recoverLostToken(IERC20 _token ) external returns ( bool ) {
-        require( _token != Time, "NAT" );
+        require( _token != Jazz, "NAT" );
         require( _token != principle, "NAP" );
         uint balance = _token.balanceOf( address(this));
         _token.safeTransfer( DAO,  balance );
