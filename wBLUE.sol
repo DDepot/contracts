@@ -610,67 +610,67 @@ library SafeERC20 {
     }
 }
 
-interface IMEMO is IERC20 {
+interface IBLUE is IERC20 {
     function index() external view returns ( uint );
 }
 
-contract wMEMO is ERC20 {
-    using SafeERC20 for IMEMO;
+contract wBLUE is ERC20 {
+    using SafeERC20 for IBLUE;
     using LowGasSafeMath for uint;
 
-    IMEMO public immutable MEMO;
-    event Wrap(address indexed recipient, uint256 amountMemo, uint256 amountWmemo);
-    event UnWrap(address indexed recipient,uint256 amountWmemo, uint256 amountMemo);
+    IBLUE public immutable BLUE;
+    event Wrap(address indexed recipient, uint256 amountBlue, uint256 amountWblue);
+    event UnWrap(address indexed recipient,uint256 amountWblue, uint256 amountBlue);
 
-    constructor( address _MEMO ) ERC20( 'Wrapped MEMO', 'wMEMO' ) {
-        require( _MEMO != address(0) );
-        MEMO = IMEMO(_MEMO);
+    constructor( address _BLUE ) ERC20( 'Wrapped BLUE', 'wBLUE' ) {
+        require( _BLUE != address(0) );
+        BLUE = IBLUE(_BLUE);
     }
 
     /**
-        @notice wrap MEMO
+        @notice wrap BLUE
         @param _amount uint
         @return uint
      */
     function wrap( uint _amount ) external returns ( uint ) {
         MEMO.safeTransferFrom( msg.sender, address(this), _amount );
         
-        uint value = MEMOTowMEMO( _amount );
+        uint value = BLUETowBLUE( _amount );
         _mint( msg.sender, value );
         emit Wrap(msg.sender, _amount, value);
         return value;
     }
 
     /**
-        @notice unwrap MEMO
+        @notice unwrap BLUE
         @param _amount uint
         @return uint
      */
     function unwrap( uint _amount ) external returns ( uint ) {
         _burn( msg.sender, _amount );
 
-        uint value = wMEMOToMEMO( _amount );
-        MEMO.safeTransfer( msg.sender, value );
+        uint value = wBLUEToBLUE( _amount );
+        BLUE.safeTransfer( msg.sender, value );
         emit UnWrap(msg.sender, _amount, value);
         return value;
     }
 
     /**
-        @notice converts wMEMO amount to MEMO
+        @notice converts wBLUE amount to BLUE
         @param _amount uint
         @return uint
      */
-    function wMEMOToMEMO( uint _amount ) public view returns ( uint ) {
-        return _amount.mul( MEMO.index() ).div( 10 ** decimals );
+    function wBLUEToBLUE( uint _amount ) public view returns ( uint ) {
+        return _amount.mul( BLUE.index() ).div( 10 ** decimals );
     }
 
     /**
-        @notice converts MEMO amount to wMEMO
+        @notice converts BLUE amount to wBLUE
         @param _amount uint
         @return uint
      */
-    function MEMOTowMEMO( uint _amount ) public view returns ( uint ) {
-        return _amount.mul( 10 ** decimals ).div( MEMO.index() );
+    function BLUETowBLUE( uint _amount ) public view returns ( uint ) {
+        return _amount.mul( 10 ** decimals ).div( BLUE.index() );
     }
 
 }
