@@ -324,7 +324,7 @@ library Address {
      *
      * Requirements:
      *
-     * - the calling contract must have an ETH balance of at least `value`.
+     * - the calling contract must have an SGB balance of at least `value`.
      * - the called Solidity function must be `payable`.
      *
      * _Available since v3.1._
@@ -703,7 +703,7 @@ abstract contract ZapBaseV2_1 is Ownable {
     }
 
     receive() external payable {
-        require(msg.sender != tx.origin, "Do not send ETH directly");
+        require(msg.sender != tx.origin, "Do not send SGB directly");
     }
 }
 
@@ -782,7 +782,7 @@ library Babylonian {
     }
 }
 
-interface IWETH {
+interface IWSGB {
     function deposit() external payable;
 }
 
@@ -835,24 +835,24 @@ interface IUniswapV2Pair {
         );
 }
 
-interface ITimeBondDepository {
+interface IJazzBondDepository {
     function deposit( uint _amount, uint _maxPrice, address _depositor) external returns ( uint );
 }
 
-contract Wonderland_ZapIn_V1 is ZapInBaseV3_1 {
+contract Dixieland_ZapIn_V1 is ZapInBaseV3_1 {
     using SafeERC20 for IERC20;
 
-    mapping (ITimeBondDepository => address) public allowedPairs;
-    mapping (ITimeBondDepository => address) public allowedReserves;
+    mapping (IJazzBondDepository => address) public allowedPairs;
+    mapping (IJazzBondDepository => address) public allowedReserves;
 
     IUniswapV2Factory private constant joeFactory =
-        IUniswapV2Factory(0x9Ad6C38BE94206cA50bb0d90783181662f0Cfa10);
+        IUniswapV2Factory(0x9AdXXXXXX10);
 
     IUniswapV2Router02 private constant joeRouter =
-        IUniswapV2Router02(0x60aE616a2155Ee3d9A68541Ba4544862310933d4);
+        IUniswapV2Router02(0x60aE61XXXXXX3d4);
 
-    address private constant wavaxTokenAddress =
-        address(0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7);
+    address private constant wsgbTokenAddress =
+        address(0xB31f6XXXXXXXXX6c7);
 
     uint256 private constant deadline =
         0xf000000000000000000000000000000000000000000000000000000000000000;
@@ -874,15 +874,15 @@ contract Wonderland_ZapIn_V1 is ZapInBaseV3_1 {
     {
         DAO = _DAO;
         // 0x exchange
-        approvedTargets[0xDef1C0ded9bec7F1a1670819833240f027b25EfF] = true;
+        approvedTargets[0xDef1C0ded9becXXXXXXXXXXXXXXXXXXXXXXXEfF] = true;
 
         //allowedPairs
-        allowedPairs[ITimeBondDepository(0xc26850686ce755FFb8690EA156E5A6cf03DcBDE1)] = 0xf64e1c5B6E17031f5504481Ac8145F4c3eab4917;
-        allowedPairs[ITimeBondDepository(0xA184AE1A71EcAD20E822cB965b99c287590c4FFe)] = 0x113f413371fC4CC4C9d6416cf1DE9dFd7BF747Df;
+        allowedPairs[IJazzBondDepository(0xc26XXXXXXXXXXXXXXXXXXXXXXXcBDE1)] = 0xf64e1XXXXXXXXXXXXXXXXXXXXXXX917;
+        allowedPairs[IJazzBondDepository(0xA184AE1A71EcAD20E822cB965b99c287590c4FFe)] = 0x113f4133XXXXXXXXXXXXXXXXXXXXXXX7Df;
 
         //allowedReserves
-        allowedReserves[ITimeBondDepository(0x694738E0A438d90487b4a549b201142c1a97B556)] = 0x130966628846BFd36ff31a822705796e8cb8C18D;
-        allowedReserves[ITimeBondDepository(0xE02B1AA2c4BE73093BE79d763fdFFC0E3cf67318)] = 0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7;
+        allowedReserves[IJazzBondDepository(0x69473XXXXXXXXXXXXXXXXXXXXXXX7B556)] = 0x130966628XXXXXXXXXXXXXXXXXXXXXXXC18D;
+        allowedReserves[IJazzBondDepository(0xE02B1AAXXXXXXXXXXXXXXXXXXXXXXX67318)] = 0xB31f66AXXXXXXXXXXXXXXXXXXXXXXXb85FD66c7;
     }
 
     event zapIn(
@@ -894,14 +894,14 @@ contract Wonderland_ZapIn_V1 is ZapInBaseV3_1 {
     function addPairAddress(address bondDepository, address pair) external onlyOwner {
         require(bondDepository != address(0), "BNA");
         require(pair != address(0), "BNA");
-        allowedPairs[ITimeBondDepository(bondDepository)] = pair;
+        allowedPairs[IJazzBondDepository(bondDepository)] = pair;
         emit AddPairAddress(bondDepository, pair);
     }
 
     function removePairAddress(address bondDepository) external onlyOwner {
         require(bondDepository != address(0), "BNA");
        
-        allowedPairs[ITimeBondDepository(bondDepository)] = address(0);
+        allowedPairs[IJazzBondDepository(bondDepository)] = address(0);
         emit RemovePairAddress(bondDepository);
     }
 
@@ -915,12 +915,12 @@ contract Wonderland_ZapIn_V1 is ZapInBaseV3_1 {
     function removeReserveAddress(address bondDepository) external onlyOwner {
         require(bondDepository != address(0), "BNA");
        
-        allowedReserves[ITimeBondDepository(bondDepository)] = address(0);
+        allowedReserves[IJazzBondDepository(bondDepository)] = address(0);
         emit RemoveReserveAddress(bondDepository);
     }
 
     /**
-    @notice Add liquidity to TraderJoe pools with ETH/ERC20 Tokens and buys Time Bond
+    @notice Add liquidity to TraderJoe pools with ETH/ERC20 Tokens and buys Jazz Bond
     @param _FromTokenContractAddress The ERC20 token used (address(0x00) if ether)
     @param _amount The amount of fromToken to invest
     @param _minPoolTokens Minimum quantity of pool tokens to receive. Reverts otherwise
@@ -931,7 +931,7 @@ contract Wonderland_ZapIn_V1 is ZapInBaseV3_1 {
      */
     function ZapInLp(
         address _FromTokenContractAddress,
-        ITimeBondDepository _bondDepository,
+        IJazzBondDepository _bondDepository,
         uint256 _amount,
         uint256 _minPoolTokens,
         address _swapTarget,
@@ -959,7 +959,7 @@ contract Wonderland_ZapIn_V1 is ZapInBaseV3_1 {
                 true
             );
         cache.balanceAfter = _FromTokenContractAddress == address(0) 
-            ? IERC20(wavaxTokenAddress).balanceOf(address(this))
+            ? IERC20(wsgbTokenAddress).balanceOf(address(this))
             : IERC20(_FromTokenContractAddress).balanceOf(address(this));
         require((cache.initialBalance - cache.toInvest) == cache.balanceAfter, "Not all tokens used");
         require(LPBought >= _minPoolTokens, "High Slippage");
@@ -976,7 +976,7 @@ contract Wonderland_ZapIn_V1 is ZapInBaseV3_1 {
 
     function ZapIn(
         address _FromTokenContractAddress,
-        ITimeBondDepository _bondDepository,
+        IJazzBondDepository _bondDepository,
         uint256 _amount,
         uint256 _minReturnTokens,
         address _swapTarget,
@@ -1003,7 +1003,7 @@ contract Wonderland_ZapIn_V1 is ZapInBaseV3_1 {
             );
 
         cache.balanceAfter = _FromTokenContractAddress == address(0) 
-            ? IERC20(wavaxTokenAddress).balanceOf(address(this))
+            ? IERC20(wsgbTokenAddress).balanceOf(address(this))
             : IERC20(_FromTokenContractAddress).balanceOf(address(this));
         require((cache.initialBalance - cache.toInvest) == cache.balanceAfter, "Not all tokens used");
         require(TokenBought >= _minReturnTokens, "High Slippage");
@@ -1126,8 +1126,8 @@ contract Wonderland_ZapIn_V1 is ZapInBaseV3_1 {
         address _swapTarget,
         bytes calldata swapData
     ) internal returns (uint256 amountBought) {
-        if (_swapTarget == wavaxTokenAddress) {
-            IWETH(wavaxTokenAddress).deposit{ value: _amount }();
+        if (_swapTarget == wsgbTokenAddress) {
+            IWSGB(wsgbTokenAddress).deposit{ value: _amount }();
             return _amount;
         }
 
@@ -1159,9 +1159,9 @@ contract Wonderland_ZapIn_V1 is ZapInBaseV3_1 {
         address _swapTarget,
         bytes calldata swapData
     ) internal returns (uint256 amountBought, address intermediateToken) {
-        if (_swapTarget == wavaxTokenAddress) {
-            IWETH(wavaxTokenAddress).deposit{ value: _amount }();
-            return (_amount, wavaxTokenAddress);
+        if (_swapTarget == wsgbTokenAddress) {
+            IWSGB(wsgbTokenAddress).deposit{ value: _amount }();
+            return (_amount, wsgbTokenAddress);
         }
 
         uint256 valueToSend;
@@ -1294,7 +1294,7 @@ contract Wonderland_ZapIn_V1 is ZapInBaseV3_1 {
         return true;
     }
 
-    function refundETH() external onlyOwner {
+    function refundSGB() external onlyOwner {
         if (address(this).balance > 0)
         {
             (bool success, ) = DAO.call{value: address(this).balance}(new bytes(0));
