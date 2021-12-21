@@ -839,7 +839,7 @@ contract Ownable is OwnableData {
     }
 }
 
-contract MEMOries is ERC20Permit, Ownable {
+contract BLUEs is ERC20Permit, Ownable {
 
     using LowGasSafeMath for uint256;
 
@@ -884,7 +884,7 @@ contract MEMOries is ERC20Permit, Ownable {
 
     mapping ( address => mapping ( address => uint256 ) ) private _allowedValue;
 
-    constructor() ERC20("MEMOries", "MEMO", 9) ERC20Permit() {
+    constructor() ERC20("BLUEs", "BLUE", 9) ERC20Permit() {
         initializer = msg.sender;
         _totalSupply = INITIAL_FRAGMENTS_SUPPLY;
         _gonsPerFragment = TOTAL_GONS.div(_totalSupply);
@@ -979,7 +979,7 @@ contract MEMOries is ERC20Permit, Ownable {
         return gons.div( _gonsPerFragment );
     }
 
-    // Staking contract holds excess MEMOries
+    // Staking contract holds excess BLUEs
     function circulatingSupply() public view returns ( uint ) {
         return _totalSupply.sub( balanceOf( stakingContract ) );
     }
