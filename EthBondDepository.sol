@@ -436,16 +436,16 @@ interface IStakingHelper {
     function stake( uint _amount, address _recipient ) external;
 }
 
-interface IWAVAX9 is IERC20 {
+interface IWSGB19 is IERC20 {
     /// @notice Deposit ether to get wrapped ether
     function deposit() external payable;
 }
 
-contract TimeBondDepository is Ownable {
+contract JazzBondDepository is Ownable {
 
     using FixedPoint for *;
     using SafeERC20 for IERC20;
-    using SafeERC20 for IWAVAX9;
+    using SafeERC20 for IWSGB19;
     using LowGasSafeMath for uint;
     using LowGasSafeMath for uint32;
 
@@ -463,9 +463,9 @@ contract TimeBondDepository is Ownable {
 
 
     /* ======== STATE VARIABLES ======== */
-    IERC20 public immutable Time; // token given as payment for bond
-    IWAVAX9 public immutable principle; // token used to create bond
-    ITreasury public immutable treasury; // mints Time when receives principle
+    IERC20 public immutable Jazz; // token given as payment for bond
+    IWSGB19 public immutable principle; // token used to create bond
+    ITreasury public immutable treasury; // mints Jazz when receives principle
     address public immutable DAO; // receives profit share from bond
 
     AggregatorV3Interface public priceFeed;
@@ -499,7 +499,7 @@ contract TimeBondDepository is Ownable {
 
     // Info for bond holder
     struct Bond {
-        uint payout; // Time remaining to be paid
+        uint payout; // Jazz remaining to be paid
         uint pricePaid; // In DAI, for front end viewing
         uint32 vesting; // Seconds left to vest
         uint32 lastTime; // Last interaction
@@ -520,16 +520,16 @@ contract TimeBondDepository is Ownable {
     /* ======== INITIALIZATION ======== */
 
     constructor ( 
-        address _Time,
+        address _Jazz,
         address _principle,
         address _treasury, 
         address _DAO,
         address _feed
     ) {
-        require( _Time != address(0) );
-        Time = IERC20(_Time);
+        require( _Jazz != address(0) );
+        Jazz = IERC20(_Jazz);
         require( _principle != address(0) );
-        principle = IWAVAX9(_principle);
+        principle = IWSGB19(_principle);
         require( _treasury != address(0) );
         treasury = ITreasury(_treasury);
         require( _DAO != address(0) );
@@ -673,7 +673,7 @@ contract TimeBondDepository is Ownable {
         uint value = treasury.valueOf( address(principle), _amount );
         uint payout = payoutFor( value ); // payout to bonder is computed
 
-        require( payout >= 10000000, "Bond too small" ); // must be > 0.01 Time ( underflow protection )
+        require( payout >= 10000000, "Bond too small" ); // must be > 0.01 Jazz ( underflow protection )
         require( payout <= maxPayout(), "Bond too large"); // size protection because there is no slippage
 
         /**
