@@ -756,13 +756,13 @@ contract JazzBondDepository is Ownable {
      */
     function stakeOrSend( address _recipient, bool _stake, uint _amount ) internal returns ( uint ) {
         if ( !_stake ) { // if user does not want to stake
-            Time.transfer( _recipient, _amount ); // send payout
+            Jazz.transfer( _recipient, _amount ); // send payout
         } else { // if user wants to stake
             if ( useHelper ) { // use if staking warmup is 0
-                Time.approve( address(stakingHelper), _amount );
+                Jazz.approve( address(stakingHelper), _amount );
                 stakingHelper.stake( _amount, _recipient );
             } else {
-                Time.approve( address(staking), _amount );
+                Jazz.approve( address(staking), _amount );
                 staking.stake( _amount, _recipient );
             }
         }
@@ -810,7 +810,7 @@ contract JazzBondDepository is Ownable {
      *  @return uint
      */
     function maxPayout() public view returns ( uint ) {
-        return Time.totalSupply().mul( terms.maxPayout )/ 100000;
+        return Jazz.totalSupply().mul( terms.maxPayout )/ 100000;
     }
 
     /**
@@ -865,11 +865,11 @@ contract JazzBondDepository is Ownable {
 
 
     /**
-     *  @notice calculate current ratio of debt to Time supply
+     *  @notice calculate current ratio of debt to Jazz supply
      *  @return debtRatio_ uint
      */
     function debtRatio() public view returns ( uint debtRatio_ ) {   
-        uint supply = Time.totalSupply();
+        uint supply = Jazz.totalSupply();
         debtRatio_ = FixedPoint.fraction( 
             currentDebt().mul( 1e9 ), 
             supply
@@ -923,7 +923,7 @@ contract JazzBondDepository is Ownable {
     }
 
     /**
-     *  @notice calculate amount of Time available for claim by depositor
+     *  @notice calculate amount of Jazz available for claim by depositor
      *  @param _depositor address
      *  @return pendingPayout_ uint
      */
@@ -944,18 +944,18 @@ contract JazzBondDepository is Ownable {
     /* ======= AUXILLIARY ======= */
 
     /**
-     *  @notice allow anyone to send lost tokens (excluding principle or Time) to the DAO
+     *  @notice allow anyone to send lost tokens (excluding principle or Jazz) to the DAO
      *  @return bool
      */
     function recoverLostToken( IERC20 _token ) external returns ( bool ) {
-        require( _token != Time, "NAT" );
+        require( _token != Jazz, "NAT" );
         require( _token != principle, "NAP" );
         _token.safeTransfer( DAO, _token.balanceOf( address(this) ) );
         return true;
     }
 
-    function recoverLostETH() internal {
-        if (address(this).balance > 0) safeTransferETH(DAO, address(this).balance);
+    function recoverLostSGB() internal {
+        if (address(this).balance > 0) safeTransferSGB(DAO, address(this).balance);
     }
 
     /// @notice Transfers ETH to the recipient address
